@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOCKS5 Web Proxy</title>
+    <title>Web Proxy Browser</title>
     <style>
         * {
             margin: 0;
@@ -13,428 +13,588 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+            background: #f5f6fa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
-            text-align: center;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .proxy-config {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
+            font-size: 24px;
             margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e1e8ed;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .input-group {
-            display: grid;
-            grid-template-columns: 3fr 1fr;
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
         }
 
-        .btn-primary {
+        .search-box {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-btn, .go-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-primary:hover {
+        .search-btn:hover, .go-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
+        .search-btn:active, .go-btn:active {
+            transform: translateY(0);
         }
 
-        .btn-secondary:hover {
-            background: #5a6268;
+        .search-btn:disabled, .go-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .button-group {
+        .browser-container {
+            flex: 1;
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .url-bar {
+            flex-direction: column;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .browser-frame {
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             overflow: hidden;
         }
 
-        .browser-header {
+        .browser-toolbar {
             background: #f8f9fa;
-            padding: 12px;
-            border-bottom: 2px solid #e1e8ed;
+            padding: 15px;
+            border-bottom: 1px solid #e1e8ed;
             display: flex;
-            gap: 8px;
             align-items: center;
+            gap: 10px;
         }
 
-        .browser-dots {
+        .nav-buttons {
             display: flex;
-            gap: 6px;
+            gap: 5px;
         }
 
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .dot.red { background: #ff5f56; }
-        .dot.yellow { background: #ffbd2e; }
-        .dot.green { background: #27c93f; }
-
-        iframe {
-            width: 100%;
-            height: 600px;
+        .nav-btn {
+            width: 35px;
+            height: 35px;
             border: none;
+            border-radius: 8px;
             background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            font-size: 18px;
         }
 
-        .status {
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
+        .nav-btn:hover {
+            background: #e9ecef;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .url-bar {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
             font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
         }
 
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .url-input:focus {
+            border-color: #667eea;
         }
 
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .browser-frame {
+            flex: 1;
+            position: relative;
+            background: white;
+            overflow: auto;
         }
 
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .browser-content {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
-        .status.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .hidden {
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
             display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
 
-        .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
+        .loading-overlay.active {
+            display: flex;
         }
 
-        .info-box h3 {
-            margin-bottom: 10px;
-            color: #667eea;
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .info-box p {
-            margin-bottom: 8px;
-            font-size: 14px;
-            line-height: 1.6;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .info-box code {
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .welcome-screen h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .welcome-screen p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 30px;
+        }
+
+        .quick-link {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+
+        .quick-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .quick-link h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .quick-link p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .status-bar {
             background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
+            padding: 8px 15px;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .error-message {
+            padding: 20px;
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+            margin: 20px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .search-input {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .browser-container {
+                margin: 10px;
+            }
+            
+            .quick-links {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌐 SOCKS5 Web Proxy</h1>
-            <p>Browse the web through a SOCKS5 proxy server</p>
-        </div>
-
-        <div class="content">
-            <div id="statusMessage" class="status info">
-                Configure your SOCKS5 proxy settings below to get started.
-            </div>
-
-            <div class="proxy-config">
-                <h2 style="margin-bottom: 20px; color: #333;">Proxy Configuration</h2>
-                
-                <div class="form-group">
-                    <label>SOCKS5 Proxy Server</label>
-                    <div class="input-group">
-                        <input type="text" id="proxyHost" placeholder="proxy.example.com" value="localhost">
-                        <input type="number" id="proxyPort" placeholder="Port" value="1080">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Username (optional)</label>
-                    <input type="text" id="proxyUsername" placeholder="Leave blank if no authentication required">
-                </div>
-
-                <div class="form-group">
-                    <label>Password (optional)</label>
-                    <input type="password" id="proxyPassword" placeholder="Leave blank if no authentication required">
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="connectProxy()">Connect to Proxy</button>
-                    <button class="btn btn-secondary" onclick="testProxy()">Test Connection</button>
-                </div>
-            </div>
-
-            <div id="browserSection" class="hidden">
-                <div class="url-bar">
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label>Enter URL to Browse</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="targetUrl" placeholder="https://example.com" style="flex: 1;">
-                            <button class="btn btn-primary" onclick="loadUrl()">Go</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="browser-frame">
-                    <div class="browser-header">
-                        <div class="browser-dots">
-                            <div class="dot red"></div>
-                            <div class="dot yellow"></div>
-                            <div class="dot green"></div>
-                        </div>
-                        <div style="margin-left: 10px; font-size: 14px; color: #666;">
-                            Proxied Browser
-                        </div>
-                    </div>
-                    <iframe id="proxyFrame"></iframe>
-                </div>
-            </div>
-
-            <div class="info-box">
-                <h3>⚠️ Important Notes</h3>
-                <p><strong>Browser Limitations:</strong> Due to browser security policies (CORS and Same-Origin Policy), a pure client-side SOCKS5 proxy cannot directly connect to external SOCKS5 servers from JavaScript.</p>
-                <p><strong>How This Works:</strong> This interface demonstrates the UI for a SOCKS5 proxy. To make it fully functional, you need:</p>
-                <p>1. A backend server (Node.js, Python, etc.) that handles SOCKS5 connections</p>
-                <p>2. WebSocket or HTTP proxy endpoints that your browser can connect to</p>
-                <p>3. The backend would then forward requests through the SOCKS5 proxy</p>
-                <p><strong>Alternative:</strong> Use browser extensions or native applications that have the necessary permissions to create SOCKS5 connections.</p>
-                <p><strong>Example Stack:</strong> Node.js with <code>socks</code> package + Express + WebSockets</p>
+    <div class="header">
+        <div class="search-container">
+            <h1>
+                <span>🌐</span>
+                <span>Web Proxy Browser</span>
+            </h1>
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="mainSearch"
+                    placeholder="Search the web or enter a URL..." 
+                    autofocus
+                >
+                <button class="search-btn" id="searchBtn">
+                    <span>🔍</span>
+                    <span>Search</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <script>
-        let proxyConnected = false;
+    <div class="browser-container">
+        <div class="browser-toolbar">
+            <div class="nav-buttons">
+                <button class="nav-btn" id="backBtn" title="Back" disabled>←</button>
+                <button class="nav-btn" id="forwardBtn" title="Forward" disabled>→</button>
+                <button class="nav-btn" id="refreshBtn" title="Refresh" disabled>↻</button>
+                <button class="nav-btn" id="homeBtn" title="Home">🏠</button>
+            </div>
+            <div class="url-bar">
+                <input 
+                    type="text" 
+                    class="url-input" 
+                    id="urlInput"
+                    placeholder="Enter URL..."
+                >
+                <button class="go-btn" id="goBtn">Go</button>
+            </div>
+        </div>
 
-        function showStatus(message, type = 'info') {
-            const statusEl = document.getElementById('statusMessage');
-            statusEl.textContent = message;
-            statusEl.className = `status ${type}`;
-            statusEl.classList.remove('hidden');
-        }
+        <div class="browser-frame">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+            </div>
 
-        function connectProxy() {
-            const host = document.getElementById('proxyHost').value;
-            const port = document.getElementById('proxyPort').value;
-            const username = document.getElementById('proxyUsername').value;
+            <iframe 
+                class="browser-content" 
+                id="browserFrame"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+            ></iframe>
 
-            if (!host || !port) {
-                showStatus('Please enter both proxy host and port', 'error');
-                return;
-            }
+            <div class="welcome-screen" id="welcomeScreen">
+                <h2>👋 Welcome to Web Proxy Browser</h2>
+                <p>
+                    Browse the internet anonymously and securely through our proxy server.
+                    Search for anything or enter a URL to get started!
+                </p>
 
-            // Simulate connection (in real implementation, this would connect to your backend)
-            showStatus('Connecting to SOCKS5 proxy...', 'info');
-            
-            setTimeout(() => {
-                showStatus(`⚠️ Demo Mode: In a real implementation, this would connect to ${host}:${port}. You need a backend server to handle actual SOCKS5 connections.`, 'warning');
-                proxyConnected = true;
-                document.getElementById('browserSection').classList.remove('hidden');
-            }, 1000);
-        }
-
-        function testProxy() {
-            const host = document.getElementById('proxyHost').value;
-            const port = document.getElementById('proxyPort').value;
-
-            if (!host || !port) {
-                showStatus('Please enter proxy configuration first', 'error');
-                return;
-            }
-
-            showStatus('Testing proxy connection...', 'info');
-
-            // Simulate test
-            setTimeout(() => {
-                showStatus('⚠️ Demo Mode: Cannot test real SOCKS5 connection from browser. Deploy with a backend server for actual functionality.', 'warning');
-            }, 1000);
-        }
-
-        function loadUrl() {
-            const url = document.getElementById('targetUrl').value;
-            
-            if (!url) {
-                showStatus('Please enter a URL', 'error');
-                return;
-            }
-
-            if (!proxyConnected) {
-                showStatus('Please connect to proxy first', 'error');
-                return;
-            }
-
-            // Validate URL
-            try {
-                new URL(url);
-            } catch (e) {
-                showStatus('Please enter a valid URL (including http:// or https://)', 'error');
-                return;
-            }
-
-            showStatus('⚠️ Demo Mode: In production, this would load the URL through your SOCKS5 proxy backend.', 'warning');
-
-            // In a real implementation, this would send the request to your backend
-            // which would fetch the content through the SOCKS5 proxy and return it
-            // For demo purposes, we'll just show a message
-            const frame = document.getElementById('proxyFrame');
-            frame.srcdoc = `
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                            padding: 40px;
-                            text-align: center;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            color: white;
-                            min-height: 100vh;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                        }
-                        h1 { margin-bottom: 20px; }
-                        p { font-size: 18px; margin-bottom: 15px; line-height: 1.6; }
-                        code { 
-                            background: rgba(255,255,255,0.2); 
-                            padding: 4px 8px; 
-                            border-radius: 4px;
-                            font-size: 16px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div>
-                        <h1>🔒 Demo Mode</h1>
-                        <p>In a production environment, this would display:</p>
-                        <p><code>${url}</code></p>
-                        <p>fetched through your SOCKS5 proxy server.</p>
-                        <p style="margin-top: 30px; font-size: 16px; opacity: 0.9;">
-                            To make this work, you need a backend server (Node.js/Python/etc.)
-                            that handles the SOCKS5 connection and proxies requests.
-                        </p>
+                <div class="quick-links">
+                    <div class="quick-link" onclick="loadQuickLink('https://html.duckduckgo.com/html')">
+                        <h3>🦆 DuckDuckGo</h3>
+                        <p>Private Search</p>
                     </div>
-                </body>
-                </html>
-            `;
+                    <div class="quick-link" onclick="loadQuickLink('https://en.wikipedia.org')">
+                        <h3>📚 Wikipedia</h3>
+                        <p>Free Encyclopedia</p>
+                    </div>
+                    <div class="quick-link" onclick="loadQuickLink('https://news.ycombinator.com')">
+                        <h3>📰 Hacker News</h3>
+                        <p>Tech News</p>
+                    </div>
+                    <div class="quick-link" onclick="loadQuickLink('https://reddit.com')">
+                        <h3>💬 Reddit</h3>
+                        <p>Social News</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            Ready to browse
+        </div>
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            history: [],
+            currentIndex: -1,
+            currentUrl: ''
+        };
+
+        // Elements
+        const mainSearch = document.getElementById('mainSearch');
+        const searchBtn = document.getElementById('searchBtn');
+        const urlInput = document.getElementById('urlInput');
+        const goBtn = document.getElementById('goBtn');
+        const browserFrame = document.getElementById('browserFrame');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const statusBar = document.getElementById('statusBar');
+        const backBtn = document.getElementById('backBtn');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const homeBtn = document.getElementById('homeBtn');
+
+        // Update navigation buttons
+        function updateNavButtons() {
+            backBtn.disabled = state.currentIndex <= 0;
+            forwardBtn.disabled = state.currentIndex >= state.history.length - 1;
+            refreshBtn.disabled = !state.currentUrl;
         }
 
-        // Allow Enter key to submit
-        document.getElementById('targetUrl').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loadUrl();
+        // Set loading state
+        function setLoading(loading) {
+            if (loading) {
+                loadingOverlay.classList.add('active');
+                searchBtn.disabled = true;
+                goBtn.disabled = true;
+            } else {
+                loadingOverlay.classList.remove('active');
+                searchBtn.disabled = false;
+                goBtn.disabled = false;
+            }
+        }
+
+        // Update status
+        function updateStatus(message) {
+            statusBar.textContent = message;
+        }
+
+        // Normalize URL
+        function normalizeUrl(input) {
+            input = input.trim();
+            
+            // If it looks like a search query (no dots or spaces)
+            if (!input.includes('.') || input.includes(' ')) {
+                return null; // This is a search query
+            }
+            
+            // Add protocol if missing
+            if (!input.match(/^https?:\/\//)) {
+                input = 'https://' + input;
+            }
+            
+            return input;
+        }
+
+        // Load URL through proxy
+        async function loadUrl(url, addToHistory = true) {
+            const normalizedUrl = normalizeUrl(url);
+            
+            if (!normalizedUrl) {
+                // It's a search query
+                await performSearch(url);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                updateStatus(`Loading ${normalizedUrl}...`);
+                welcomeScreen.style.display = 'none';
+
+                // Update UI
+                urlInput.value = normalizedUrl;
+                state.currentUrl = normalizedUrl;
+
+                // Add to history
+                if (addToHistory) {
+                    state.currentIndex++;
+                    state.history = state.history.slice(0, state.currentIndex);
+                    state.history.push(normalizedUrl);
+                    updateNavButtons();
+                }
+
+                // Load through proxy
+                const proxyUrl = `/api/proxy?url=${encodeURIComponent(normalizedUrl)}`;
+                browserFrame.src = proxyUrl;
+
+                // Wait for load
+                browserFrame.onload = () => {
+                    setLoading(false);
+                    updateStatus(`Loaded: ${normalizedUrl}`);
+                };
+
+                browserFrame.onerror = () => {
+                    setLoading(false);
+                    updateStatus(`Failed to load: ${normalizedUrl}`);
+                };
+
+            } catch (error) {
+                setLoading(false);
+                updateStatus(`Error: ${error.message}`);
+                alert('Failed to load URL: ' + error.message);
+            }
+        }
+
+        // Perform search
+        async function performSearch(query) {
+            try {
+                setLoading(true);
+                updateStatus(`Searching for "${query}"...`);
+                
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data.success && data.redirectUrl) {
+                    await loadUrl(data.redirectUrl);
+                } else {
+                    throw new Error('Search failed');
+                }
+            } catch (error) {
+                setLoading(false);
+                updateStatus(`Search failed: ${error.message}`);
+                alert('Search failed: ' + error.message);
+            }
+        }
+
+        // Load quick link
+        function loadQuickLink(url) {
+            loadUrl(url);
+        }
+
+        // Make function available globally for rewritten links
+        window.loadProxyUrl = function(url) {
+            loadUrl(url);
+        };
+
+        // Navigation functions
+        function goBack() {
+            if (state.currentIndex > 0) {
+                state.currentIndex--;
+                loadUrl(state.history[state.currentIndex], false);
+            }
+        }
+
+        function goForward() {
+            if (state.currentIndex < state.history.length - 1) {
+                state.currentIndex++;
+                loadUrl(state.history[state.currentIndex], false);
+            }
+        }
+
+        function refresh() {
+            if (state.currentUrl) {
+                loadUrl(state.currentUrl, false);
+            }
+        }
+
+        function goHome() {
+            browserFrame.src = '';
+            welcomeScreen.style.display = 'flex';
+            urlInput.value = '';
+            state.currentUrl = '';
+            updateStatus('Ready to browse');
+            updateNavButtons();
+        }
+
+        // Event listeners
+        searchBtn.addEventListener('click', () => {
+            const query = mainSearch.value.trim();
+            if (query) {
+                loadUrl(query);
             }
         });
+
+        mainSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = mainSearch.value.trim();
+                if (query) {
+                    loadUrl(query);
+                }
+            }
+        });
+
+        goBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                loadUrl(url);
+            }
+        });
+
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const url = urlInput.value.trim();
+                if (url) {
+                    loadUrl(url);
+                }
+            }
+        });
+
+        backBtn.addEventListener('click', goBack);
+        forwardBtn.addEventListener('click', goForward);
+        refreshBtn.addEventListener('click', refresh);
+        homeBtn.addEventListener('click', goHome);
+
+        // Initialize
+        updateNavButtons();
+        console.log('🌐 Web Proxy Browser Ready!');
     </script>
 </body>
 </html>
