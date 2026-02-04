@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Proxy Browser</title>
+    <title>Free SOCKS5 Proxy Browser</title>
     <style>
         * {
             margin: 0;
@@ -12,169 +12,275 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f6fa;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
         }
 
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
 
-        .search-container {
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .proxy-selector {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .proxy-selector h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .proxy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .proxy-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e1e8ed;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .proxy-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .proxy-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .proxy-card .flag {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .proxy-card .address {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .proxy-card .country {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .proxy-card .uptime {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .uptime.high { background: #d4edda; color: #155724; }
+        .uptime.medium { background: #fff3cd; color: #856404; }
+        .uptime.low { background: #f8d7da; color: #721c24; }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .search-box {
             display: flex;
             gap: 10px;
-            background: white;
-            padding: 5px;
-            border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
         .search-input {
             flex: 1;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 50px;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .search-btn, .go-btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .search-btn:hover, .go-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .search-btn:active, .go-btn:active {
-            transform: translateY(0);
-        }
-
-        .search-btn:disabled, .go-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .browser-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            margin: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .browser-toolbar {
-            background: #f8f9fa;
-            padding: 15px;
-            border-bottom: 1px solid #e1e8ed;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .nav-btn {
-            width: 35px;
-            height: 35px;
-            border: none;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-            font-size: 18px;
-        }
-
-        .nav-btn:hover {
-            background: #e9ecef;
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .url-bar {
-            flex: 1;
-            display: flex;
-            gap: 10px;
-        }
-
-        .url-input {
-            flex: 1;
-            padding: 10px 15px;
+            padding: 12px 20px;
             border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 16px;
             outline: none;
             transition: border-color 0.3s;
         }
 
-        .url-input:focus {
+        .search-input:focus {
             border-color: #667eea;
         }
 
         .browser-frame {
-            flex: 1;
-            position: relative;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
             background: white;
-            overflow: auto;
+            overflow: hidden;
+            display: none;
         }
 
+        .browser-frame.active {
+            display: block;
+        }
+
+        .browser-header {
+            background: #f8f9fa;
+            padding: 12px;
+            border-bottom: 2px solid #e1e8ed;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .browser-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
+
         .browser-content {
-            width: 100%;
-            height: 100%;
-            border: none;
+            padding: 20px;
+            min-height: 500px;
+            max-height: 600px;
+            overflow: auto;
+            background: white;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .hidden { display: none; }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .loading-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(0,0,0,0.5);
             display: none;
             align-items: center;
             justify-content: center;
@@ -185,416 +291,331 @@
             display: flex;
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .welcome-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #666;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .welcome-screen h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .welcome-screen p {
-            font-size: 18px;
-            margin-bottom: 30px;
-            max-width: 600px;
-        }
-
-        .quick-links {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 800px;
-            margin-top: 30px;
-        }
-
-        .quick-link {
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .loading-box {
+            background: white;
+            padding: 30px;
             border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
             text-align: center;
         }
 
-        .quick-link:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .quick-link h3 {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .quick-link p {
-            font-size: 12px;
-            opacity: 0.9;
-            margin: 0;
-        }
-
-        .status-bar {
-            background: #f8f9fa;
-            padding: 8px 15px;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #e1e8ed;
-        }
-
-        .error-message {
-            padding: 20px;
-            background: #fee;
-            color: #c33;
-            border-left: 4px solid #c33;
-            margin: 20px;
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
             border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .info-box p {
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .search-input {
-                padding: 12px 20px;
-                font-size: 14px;
-            }
-            
-            .browser-container {
-                margin: 10px;
-            }
-            
-            .quick-links {
-                grid-template-columns: 1fr 1fr;
+            .proxy-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="search-container">
-            <h1>
-                <span>🌐</span>
-                <span>Web Proxy Browser</span>
-            </h1>
-            <div class="search-box">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    id="mainSearch"
-                    placeholder="Search the web or enter a URL..." 
-                    autofocus
-                >
-                <button class="search-btn" id="searchBtn">
-                    <span>🔍</span>
-                    <span>Search</span>
-                </button>
-            </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="spinner" style="margin: 0 auto 20px;"></div>
+            <p id="loadingText">Loading...</p>
         </div>
     </div>
 
-    <div class="browser-container">
-        <div class="browser-toolbar">
-            <div class="nav-buttons">
-                <button class="nav-btn" id="backBtn" title="Back" disabled>←</button>
-                <button class="nav-btn" id="forwardBtn" title="Forward" disabled>→</button>
-                <button class="nav-btn" id="refreshBtn" title="Refresh" disabled>↻</button>
-                <button class="nav-btn" id="homeBtn" title="Home">🏠</button>
-            </div>
-            <div class="url-bar">
-                <input 
-                    type="text" 
-                    class="url-input" 
-                    id="urlInput"
-                    placeholder="Enter URL..."
-                >
-                <button class="go-btn" id="goBtn">Go</button>
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Free SOCKS5 Proxy Browser</h1>
+            <p>Browse the web anonymously using free public SOCKS5 proxies</p>
         </div>
 
-        <div class="browser-frame">
-            <div class="loading-overlay" id="loadingOverlay">
-                <div class="spinner"></div>
+        <div class="content">
+            <div id="statusMessage" class="status info">
+                Select a SOCKS5 proxy from the list below to get started.
             </div>
 
-            <iframe 
-                class="browser-content" 
-                id="browserFrame"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-            ></iframe>
-
-            <div class="welcome-screen" id="welcomeScreen">
-                <h2>👋 Welcome to Web Proxy Browser</h2>
-                <p>
-                    Browse the internet anonymously and securely through our proxy server.
-                    Search for anything or enter a URL to get started!
-                </p>
-
-                <div class="quick-links">
-                    <div class="quick-link" onclick="loadQuickLink('https://html.duckduckgo.com/html')">
-                        <h3>🦆 DuckDuckGo</h3>
-                        <p>Private Search</p>
-                    </div>
-                    <div class="quick-link" onclick="loadQuickLink('https://en.wikipedia.org')">
-                        <h3>📚 Wikipedia</h3>
-                        <p>Free Encyclopedia</p>
-                    </div>
-                    <div class="quick-link" onclick="loadQuickLink('https://news.ycombinator.com')">
-                        <h3>📰 Hacker News</h3>
-                        <p>Tech News</p>
-                    </div>
-                    <div class="quick-link" onclick="loadQuickLink('https://reddit.com')">
-                        <h3>💬 Reddit</h3>
-                        <p>Social News</p>
-                    </div>
+            <div class="proxy-selector">
+                <h2>📡 Available Free SOCKS5 Proxies</h2>
+                <div class="proxy-grid" id="proxyGrid">
+                    <!-- Proxies will be loaded here -->
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="testBtn" disabled>
+                        <span>Test Selected Proxy</span>
+                    </button>
+                    <button class="btn btn-secondary" id="refreshBtn">
+                        <span>Refresh Proxy List</span>
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="status-bar" id="statusBar">
-            Ready to browse
+            <div class="search-section">
+                <h2 style="margin-bottom: 15px; color: #333;">🔍 Browse the Web</h2>
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="urlInput"
+                        placeholder="Enter URL (e.g., example.com or https://wikipedia.org)"
+                        disabled
+                    >
+                    <button class="btn btn-primary" id="goBtn" disabled>
+                        <span>Go</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="browser-frame" id="browserFrame">
+                <div class="browser-header">
+                    <div class="browser-dots">
+                        <div class="dot red"></div>
+                        <div class="dot yellow"></div>
+                        <div class="dot green"></div>
+                    </div>
+                    <div style="margin-left: 10px; font-size: 14px; color: #666;">
+                        Browsing via: <span id="currentProxy">No proxy selected</span>
+                    </div>
+                </div>
+                <div class="browser-content" id="browserContent">
+                    <p style="text-align: center; color: #999;">
+                        Content will appear here
+                    </p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>ℹ️ How to Use</h3>
+                <p><strong>1.</strong> Select a proxy from the list above (green uptime = best)</p>
+                <p><strong>2.</strong> Click "Test Selected Proxy" to verify it works</p>
+                <p><strong>3.</strong> Enter a URL in the search box and click "Go"</p>
+                <p><strong>4.</strong> If a proxy fails, try another one with higher uptime</p>
+                <p><strong>Note:</strong> Free proxies may be slow or unstable. High uptime proxies work best!</p>
+            </div>
         </div>
     </div>
 
     <script>
-        // State management
-        const state = {
-            history: [],
-            currentIndex: -1,
-            currentUrl: ''
-        };
+        let proxies = [];
+        let selectedProxy = null;
+        const sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
 
-        // Elements
-        const mainSearch = document.getElementById('mainSearch');
-        const searchBtn = document.getElementById('searchBtn');
-        const urlInput = document.getElementById('urlInput');
-        const goBtn = document.getElementById('goBtn');
-        const browserFrame = document.getElementById('browserFrame');
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const statusBar = document.getElementById('statusBar');
-        const backBtn = document.getElementById('backBtn');
-        const forwardBtn = document.getElementById('forwardBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const homeBtn = document.getElementById('homeBtn');
-
-        // Update navigation buttons
-        function updateNavButtons() {
-            backBtn.disabled = state.currentIndex <= 0;
-            forwardBtn.disabled = state.currentIndex >= state.history.length - 1;
-            refreshBtn.disabled = !state.currentUrl;
+        // Get country flag emoji
+        function getFlag(country) {
+            const flags = {
+                'United States': '🇺🇸',
+                'United Kingdom': '🇬🇧',
+                'Netherlands': '🇳🇱',
+                'Singapore': '🇸🇬',
+                'Austria': '🇦🇹',
+                'Cambodia': '🇰🇭',
+                'VietNam': '🇻🇳',
+                'Bangladesh': '🇧🇩',
+                'Indonesia': '🇮🇩',
+                'South Korea': '🇰🇷',
+                'Turkey': '🇹🇷',
+                'Russia': '🇷🇺',
+                'Ukraine': '🇺🇦'
+            };
+            return flags[country] || '🌐';
         }
 
-        // Set loading state
-        function setLoading(loading) {
+        // Get uptime class
+        function getUptimeClass(uptime) {
+            const percent = parseInt(uptime);
+            if (percent >= 70) return 'high';
+            if (percent >= 40) return 'medium';
+            return 'low';
+        }
+
+        // Show status
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.classList.remove('hidden');
+        }
+
+        // Set loading
+        function setLoading(loading, text = 'Loading...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
             if (loading) {
-                loadingOverlay.classList.add('active');
-                searchBtn.disabled = true;
-                goBtn.disabled = true;
+                loadingText.textContent = text;
+                overlay.classList.add('active');
             } else {
-                loadingOverlay.classList.remove('active');
-                searchBtn.disabled = false;
-                goBtn.disabled = false;
+                overlay.classList.remove('active');
             }
         }
 
-        // Update status
-        function updateStatus(message) {
-            statusBar.textContent = message;
+        // Load proxies
+        async function loadProxies() {
+            try {
+                setLoading(true, 'Loading free SOCKS5 proxies...');
+                const response = await fetch('/api/proxies');
+                const data = await response.json();
+
+                if (data.success) {
+                    proxies = data.proxies;
+                    renderProxies();
+                    showStatus(`✅ Loaded ${proxies.length} free SOCKS5 proxies. Select one to start browsing!`, 'success');
+                } else {
+                    showStatus('❌ Failed to load proxy list', 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Error loading proxies: ' + error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
         }
 
-        // Normalize URL
-        function normalizeUrl(input) {
-            input = input.trim();
-            
-            // If it looks like a search query (no dots or spaces)
-            if (!input.includes('.') || input.includes(' ')) {
-                return null; // This is a search query
-            }
-            
-            // Add protocol if missing
-            if (!input.match(/^https?:\/\//)) {
-                input = 'https://' + input;
-            }
-            
-            return input;
+        // Render proxies
+        function renderProxies() {
+            const grid = document.getElementById('proxyGrid');
+            grid.innerHTML = '';
+
+            proxies.forEach(proxy => {
+                const card = document.createElement('div');
+                card.className = 'proxy-card';
+                if (selectedProxy === proxy.id) {
+                    card.classList.add('selected');
+                }
+
+                card.innerHTML = `
+                    <div class="flag">${getFlag(proxy.country)}</div>
+                    <div class="country">${proxy.country}</div>
+                    <div class="address">${proxy.address}</div>
+                    <span class="uptime ${getUptimeClass(proxy.uptime)}">
+                        ⬆️ ${proxy.uptime} uptime
+                    </span>
+                `;
+
+                card.onclick = () => selectProxy(proxy.id);
+                grid.appendChild(card);
+            });
         }
 
-        // Load URL through proxy
-        async function loadUrl(url, addToHistory = true) {
-            const normalizedUrl = normalizeUrl(url);
+        // Select proxy
+        function selectProxy(id) {
+            selectedProxy = id;
+            renderProxies();
             
-            if (!normalizedUrl) {
-                // It's a search query
-                await performSearch(url);
+            const proxy = proxies.find(p => p.id === id);
+            showStatus(`✓ Selected proxy: ${proxy.address} (${proxy.country})`, 'info');
+            
+            document.getElementById('testBtn').disabled = false;
+            document.getElementById('urlInput').disabled = false;
+            document.getElementById('goBtn').disabled = false;
+        }
+
+        // Test proxy
+        async function testProxy() {
+            if (selectedProxy === null) {
+                showStatus('❌ Please select a proxy first', 'error');
                 return;
             }
 
+            const proxy = proxies.find(p => p.id === selectedProxy);
+            
             try {
-                setLoading(true);
-                updateStatus(`Loading ${normalizedUrl}...`);
-                welcomeScreen.style.display = 'none';
-
-                // Update UI
-                urlInput.value = normalizedUrl;
-                state.currentUrl = normalizedUrl;
-
-                // Add to history
-                if (addToHistory) {
-                    state.currentIndex++;
-                    state.history = state.history.slice(0, state.currentIndex);
-                    state.history.push(normalizedUrl);
-                    updateNavButtons();
-                }
-
-                // Load through proxy
-                const proxyUrl = `/api/proxy?url=${encodeURIComponent(normalizedUrl)}`;
-                browserFrame.src = proxyUrl;
-
-                // Wait for load
-                browserFrame.onload = () => {
-                    setLoading(false);
-                    updateStatus(`Loaded: ${normalizedUrl}`);
-                };
-
-                browserFrame.onerror = () => {
-                    setLoading(false);
-                    updateStatus(`Failed to load: ${normalizedUrl}`);
-                };
-
-            } catch (error) {
-                setLoading(false);
-                updateStatus(`Error: ${error.message}`);
-                alert('Failed to load URL: ' + error.message);
-            }
-        }
-
-        // Perform search
-        async function performSearch(query) {
-            try {
-                setLoading(true);
-                updateStatus(`Searching for "${query}"...`);
+                setLoading(true, `Testing proxy ${proxy.address}...`);
                 
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const response = await fetch('/api/proxy/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ proxyId: selectedProxy })
+                });
+
                 const data = await response.json();
 
-                if (data.success && data.redirectUrl) {
-                    await loadUrl(data.redirectUrl);
+                if (data.success) {
+                    showStatus(`✅ ${data.message} - Ready to browse!`, 'success');
                 } else {
-                    throw new Error('Search failed');
+                    showStatus(`❌ ${data.error}: ${data.details}. ${data.suggestion}`, 'error');
                 }
             } catch (error) {
+                showStatus('❌ Test failed: ' + error.message, 'error');
+            } finally {
                 setLoading(false);
-                updateStatus(`Search failed: ${error.message}`);
-                alert('Search failed: ' + error.message);
             }
         }
 
-        // Load quick link
-        function loadQuickLink(url) {
-            loadUrl(url);
-        }
-
-        // Make function available globally for rewritten links
-        window.loadProxyUrl = function(url) {
-            loadUrl(url);
-        };
-
-        // Navigation functions
-        function goBack() {
-            if (state.currentIndex > 0) {
-                state.currentIndex--;
-                loadUrl(state.history[state.currentIndex], false);
+        // Load URL
+        async function loadUrl() {
+            if (selectedProxy === null) {
+                showStatus('❌ Please select a proxy first', 'error');
+                return;
             }
-        }
 
-        function goForward() {
-            if (state.currentIndex < state.history.length - 1) {
-                state.currentIndex++;
-                loadUrl(state.history[state.currentIndex], false);
+            let url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                showStatus('❌ Please enter a URL', 'error');
+                return;
             }
-        }
 
-        function refresh() {
-            if (state.currentUrl) {
-                loadUrl(state.currentUrl, false);
+            // Add protocol if missing
+            if (!url.match(/^https?:\/\//)) {
+                url = 'http://' + url;
             }
-        }
 
-        function goHome() {
-            browserFrame.src = '';
-            welcomeScreen.style.display = 'flex';
-            urlInput.value = '';
-            state.currentUrl = '';
-            updateStatus('Ready to browse');
-            updateNavButtons();
+            const proxy = proxies.find(p => p.id === selectedProxy);
+
+            try {
+                setLoading(true, `Fetching ${url} through ${proxy.address}...`);
+                
+                const response = await fetch('/api/fetch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: url,
+                        proxyId: selectedProxy,
+                        sessionId: sessionId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show browser frame
+                    document.getElementById('browserFrame').classList.add('active');
+                    document.getElementById('currentProxy').textContent = proxy.address;
+                    
+                    // Display content
+                    const content = document.getElementById('browserContent');
+                    content.innerHTML = data.body;
+                    
+                    showStatus(`✅ Loaded: ${url} via ${data.proxy}`, 'success');
+                } else {
+                    showStatus(`❌ ${data.error}: ${data.details}. ${data.suggestion}`, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Failed to load: ' + error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
         }
 
         // Event listeners
-        searchBtn.addEventListener('click', () => {
-            const query = mainSearch.value.trim();
-            if (query) {
-                loadUrl(query);
-            }
-        });
-
-        mainSearch.addEventListener('keypress', (e) => {
+        document.getElementById('testBtn').addEventListener('click', testProxy);
+        document.getElementById('refreshBtn').addEventListener('click', loadProxies);
+        document.getElementById('goBtn').addEventListener('click', loadUrl);
+        
+        document.getElementById('urlInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const query = mainSearch.value.trim();
-                if (query) {
-                    loadUrl(query);
-                }
+                loadUrl();
             }
         });
 
-        goBtn.addEventListener('click', () => {
-            const url = urlInput.value.trim();
-            if (url) {
-                loadUrl(url);
-            }
-        });
-
-        urlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const url = urlInput.value.trim();
-                if (url) {
-                    loadUrl(url);
-                }
-            }
-        });
-
-        backBtn.addEventListener('click', goBack);
-        forwardBtn.addEventListener('click', goForward);
-        refreshBtn.addEventListener('click', refresh);
-        homeBtn.addEventListener('click', goHome);
-
-        // Initialize
-        updateNavButtons();
-        console.log('🌐 Web Proxy Browser Ready!');
+        // Load proxies on page load
+        window.addEventListener('load', loadProxies);
     </script>
 </body>
 </html>
