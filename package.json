@@ -1,0 +1,21 @@
+{
+  "name": "free-socks5-proxy-browser",
+  "version": "1.0.0",
+  "description": "Web browser using free SOCKS5 proxies",
+  "main": "socks5-bridge.js",
+  "scripts": {
+    "start": "node socks5-bridge.js",
+    "dev": "nodemon socks5-bridge.js"
+  },
+  "keywords": ["socks5", "proxy", "free-proxy", "web-browser"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "socks": "^2.7.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
